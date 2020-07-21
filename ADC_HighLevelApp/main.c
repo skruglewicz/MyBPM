@@ -118,10 +118,11 @@ int initI2c(void);
 unsigned int micros(void);
 
 //Jitter options defines
-//#define OPT_R 10        // min uS allowed lag btw alarm and callback
-//#define OPT_U 2000      // sample time uS between alarms
-#define OPT_R 10  // min uS allowed lag btw alarm and callback
-#define OPT_U 50// sample time uS between alarms
+#define OPT_R 10        // min uS allowed lag btw alarm and callback
+#define OPT_U 2000      // sample time uS between alarms
+//#define OPT_R 10  // min uS allowed lag btw alarm and callback
+//#define OPT_U 50// sample time uS between alarms
+
 #define OPT_O_ELAPSED 0 // output option uS elapsed time between alarms
 #define OPT_O_JITTER 1  // output option uS jitter (elapsed time - sample time)
 #define OPT_O 1         // defaoult output option
@@ -182,7 +183,6 @@ static void AdcPollingEventHandler(EventLoopTimer *timer)
         exitCode = ExitCode_AdcTimerHandler_Consume;
         return;
     }
-
 
 
     uint32_t value;
@@ -285,9 +285,12 @@ static ExitCode InitPeripheralsAndHandlers(void)
 
     //struct timespec adcCheckPeriod = {.tv_sec = 1, .tv_nsec = 0};
     // sak 5-21-2020 need to check on microseconds not seconds
+    //ported app had a checkpoint tin microsecods (U)
     ///  1 microsecond is 1000 nanoseconds
     ///  1 nanosecond is 0.001 microseconds
-    struct timespec adcCheckPeriod = { .tv_sec = 0, .tv_nsec = 600000};
+    //// 2000 microseconds = 2,000,000 nanoseconds
+    struct timespec adcCheckPeriod = { .tv_sec = 0, .tv_nsec = 2000000};
+    //struct timespec adcCheckPeriod = { .tv_sec = 0, .tv_nsec = 600000 };
 
 
     adcPollTimer =
@@ -414,9 +417,9 @@ int main(int argc, char *argv[])
                     update_oled();
                     OldBpm = BPM;
 
-                    //Sleep for a blink
-                    struct timespec sleepTime = { 0, 600000 };
-                    nanosleep(&sleepTime, NULL);
+                    ////Sleep for a blink
+                    //struct timespec sleepTime = { 0, 2000 };
+                    //nanosleep(&sleepTime, NULL);
 
                     //turn OFF the led
                     GPIO_SetValue(fd, GPIO_Value_High); //OFF
@@ -491,7 +494,7 @@ void getPulse(uint32_t sig_num) {
         thisTime = micros();
         //Signal = analogRead(BASE);
         //Signal = sig_num/2;
-        Signal = sig_num/2;
+        Signal = sig_num;
         elapsedTime = thisTime - lastTime;
 
         //Log_Debug("%d\t%d\t%d\t%d\t%d\t%d\n",
